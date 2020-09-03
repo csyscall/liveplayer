@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/p2p-ckplayer@latest/ckplayer/ckplayer.min.js" charset="UTF-8"></script>
+<script language="javascript">	
+QueryString = {
+    data: {},
+    Initial: function() {
+        var aPairs, aTmp;
+        var queryString = new String(window.location.search);
+        queryString = queryString.substr(1, queryString.length); //remove   "?"   
+        aPairs = queryString.split("&");
+        for (var i = 0; i < aPairs.length; i++) {
+            aTmp = aPairs[i].split("=");
+            this.data[aTmp[0]] = aTmp[1];
+        }
+    },
+    GetValue: function(key) {
+        return this.data[key];
+    }
+}
+
+function main(){
+	$("#list").append("<h2>直播节目列表</h2>");
+	$.getJSON("/stat",function(rt){
+		var apps=rt["http-flv"]["servers"][0];
+		for(i=2;i<apps.length;i++){
+			for(j=0;j<apps[i].live.streams.length;j++){
+				if(apps[i].live.streams[j].publishing){
+					//流发布中可以展示
+					var app=apps[i].name;
+					var myname=apps[i].live.streams[j].name;
+					$("#list").append("<a href='javascript:void(0)'>"+app+"->"+myname+"</a><br />\n");
+				}
+			}
+		}
+		$("a").click(function(obj){
+			var url=obj.currentTarget.innerText.replace("->","/");
+			var str=url.split("/");
+			switch(str[0]){
+				case "hls":
+                case "hls1":
+                    url="/"+url+"/index.m3u8";
+					break;
+				case "dash":
+					url="rtmp://"+window.location.hostname+":1936/"+url;
+					break;
+				case "live":
+					url="rtmp://"+window.location.hostname+":1936/"+url;
+					break;
+			}
+			//url="rtmp://125.43.68.240:1936/vod"+url;
+			//player.newVideo({autoplay:true,live:true,video:url});
+            videoObject.autoplay=true;
+            videoObject.video=url;
+            player=new ckplayer(videoObject);
+		});
+	});
+}
+</script>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>伊川教育网</title>
+</head>
+<body>
+<div id="list" style="float:left;padding:5px;" ></div>
+<div class="video" style="width: 1000px; height: 600px; /*float: left;*/margin: auto"></div>
+<script type="text/javascript">
+	var videoObject = {
+		container: '.video',//“#”代表容器的ID，“.”或“”代表容器的class
+		variable: 'player',//该属性必需设置，值等于下面的new chplayer()的对象
+        html5m3u8:true,
+		video:'pt.gif',//视频地址
+        hlsjsConfig:{
+            debug:false,
+            p2pConfig:{
+                logLevel:true,
+                live:true,
+            }
+        }
+	};
+	QueryString.Initial();
+	if(null==QueryString.GetValue("fn")){
+		main();
+	} else {
+		//player.newVideo({autoplay:true,video:QueryString.GetValue("fn")});
+        videoObject.video=QueryString.GetValue("fn");
+        player=new ckplayer(videoObject);
+	}
+</script>
+</body>
+</html>
