@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>视频点播系统</title>
+</head>
+<body>
+<?php
+$rootpath="/mnt/1s1k/mnt247/";
+$file=$_GET["file"];
+//if(empty($file))
+//    $file=$rootpath;
+//else if(!stripos($file,$rootpath))
+$file=$rootpath.$file;
+function listfile($data){
+    $temp=scandir($data);
+    foreach($temp as $v){
+        $a=$data.'/'.$v;
+        
+        if(is_dir($a)){
+            if($v=='.'||$v=='..')
+                continue;
+            $a=str_replace("/mnt/1s1k/mnt247/","",$a);
+            echo "+ <a href='index.php?file=$a'>$a</a><br />\r\n";
+            //listfile($a);
+        }else if(stripos($a,"mp4")>0){
+            $a=str_replace("/mnt/1s1k/mnt247/","",$a);
+            echo " - <a href='/movie_play.html?fn=/vod/$a'>$a</a><br />\r\n";
+        }else{
+             continue;   
+        }
+    }
+}
+echo "当前位置：".$_GET["file"]."<br /><br />\r\n";
+echo "<a href='#' onclick='history.go(-1)'>后退</a> <a href='#' onclick='history.go(1)'>前进</a><br /> \r\n";
+listfile($file);
+?>
+</body>
+</html>
+
